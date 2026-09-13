@@ -1,6 +1,6 @@
 const express = require('express');
 const { spawn } = require('child_process');
-const ytdlp = require('yt-dlp-exec'); // Uses the installed Node package automatically
+const youtubedl = require('youtube-dl-exec'); // Updated package name
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
@@ -20,9 +20,9 @@ app.get('/api/info', async (req, res) => {
     if (!videoUrl) return res.status(400).json({ error: 'URL is required' });
 
     try {
-        const output = await ytdlp(videoUrl, {
+        const output = await youtubedl(videoUrl, {
             ...ytdlpArgs,
-            dumpJson: true
+            dumpSingleJson: true
         });
 
         res.json({
@@ -49,11 +49,11 @@ app.get('/api/convert', (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}_${bitrate}.mp3"`);
         res.setHeader('Content-Type', 'audio/mpeg');
 
-        const ytdlpStream = ytdlp.stream(url, {
+        const ytdlpStream = youtubedl.exec(url, {
             ...ytdlpArgs,
             output: '-',
             format: 'ba/b'
-        });
+        }, { stdio: ['ignore', 'pipe', 'pipe'] });
 
         const ffmpeg = spawn('ffmpeg', [
             '-i', 'pipe:0',
@@ -64,11 +64,11 @@ app.get('/api/convert', (req, res) => {
             'pipe:1'
         ]);
 
-        ytdlpStream.pipe(ffmpeg.stdin);
+        ytdlpStream.stdout.pipe(ffmpeg.stdin);
         ffmpeg.stdout.pipe(res);
 
         req.on('close', () => {
-            ytdlpStream.destroy();
+            ytdlpStream.kill();
             ffmpeg.kill();
         });
     } 
@@ -80,11 +80,11 @@ app.get('/api/convert', (req, res) => {
 
         const formatSpec = `bv*[height=${height}]+ba/bv*[height<=${height}]+ba/best`;
 
-        const ytdlpStream = ytdlp.stream(url, {
+        const ytdlpStream = youtubedl.exec(url, {
             ...ytdlpArgs,
             output: '-',
             format: formatSpec
-        });
+        }, { stdio: ['ignore', 'pipe', 'pipe'] });
 
         const ffmpeg = spawn('ffmpeg', [
             '-i', 'pipe:0',
@@ -98,11 +98,11 @@ app.get('/api/convert', (req, res) => {
             'pipe:1'
         ]);
 
-        ytdlpStream.pipe(ffmpeg.stdin);
+        ytdlpStream.stdout.pipe(ffmpeg.stdin);
         ffmpeg.stdout.pipe(res);
 
         req.on('close', () => {
-            ytdlpStream.destroy();
+            ytdlpStream.kill();
             ffmpeg.kill();
         });
     } else {
