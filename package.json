@@ -1,7 +1,7 @@
 {
   "name": "youtube-downloader-web",
   "version": "1.0.0",
-  "description": "Web-based YouTube MP3/MP4 Downloader using Node.js, Express, and yt-dlp",
+  "description": "Web-based YouTube MP3/MP4 Downloader",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -9,6 +9,6 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "yt-dlp-exec": "^2.5.8"
+    "youtube-dl-exec": "^3.1.12"
   }
 }
